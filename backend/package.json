@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^25.9.4",
+    "tsx": "^4.22.4"
+  },
+  "peerDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "axios": "^1.18.1",
+    "fastify": "^5.8.5",
+    "mysql2": "^3.22.5"
+  },
+  "scripts": {
+    "dev": "bun --watch src/server.ts"
+  }
+}
