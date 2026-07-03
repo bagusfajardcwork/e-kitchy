@@ -1,0 +1,15 @@
+meta {
+  name: jenis_referensi/:id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/master/jenis_referensi/2
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

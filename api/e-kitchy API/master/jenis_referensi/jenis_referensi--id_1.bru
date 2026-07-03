@@ -1,0 +1,27 @@
+meta {
+  name: jenis_referensi/:id_1
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base_url}}/master/jenis_referensi/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "deskripsi": "Status Perkawinan Baru",
+    "singkatan": "SPB",
+    "status_aktif": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+}

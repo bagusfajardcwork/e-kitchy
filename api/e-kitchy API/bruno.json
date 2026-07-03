@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "e-kitchy API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

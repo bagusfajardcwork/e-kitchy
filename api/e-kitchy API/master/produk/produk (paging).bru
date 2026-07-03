@@ -1,0 +1,21 @@
+meta {
+  name: produk (paging)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/master/produk?page=1&limit=10&search=
+  body: json
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+}
+
+settings {
+  encodeUrl: true
+}

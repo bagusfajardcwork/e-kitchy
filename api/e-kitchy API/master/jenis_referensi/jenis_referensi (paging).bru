@@ -1,0 +1,21 @@
+meta {
+  name: jenis_referensi (paging)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/master/jenis_referensi?page=1&limit=10&search=
+  body: json
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+}
+
+settings {
+  encodeUrl: true
+}

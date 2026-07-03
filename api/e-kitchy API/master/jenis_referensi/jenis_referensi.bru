@@ -1,0 +1,26 @@
+meta {
+  name: jenis_referensi
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/master/jenis_referensi
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "deskripsi": "Minuman",
+    "singkatan": ""
+  }
+}
+
+settings {
+  encodeUrl: true
+}

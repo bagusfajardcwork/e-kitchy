@@ -1,0 +1,21 @@
+meta {
+  name: referensi/:id
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/master/referensi/jenisref/2?page=1&limit=10&search
+  body: json
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+}
+
+settings {
+  encodeUrl: true
+}

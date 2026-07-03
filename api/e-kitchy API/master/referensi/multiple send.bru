@@ -1,0 +1,36 @@
+meta {
+  name: multiple send
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/master/referensi/multiple_send
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  [
+      {
+          "id": null,
+          "jenis_referensi_fk": 3,
+          "deskripsi": "Makanan",
+          "status_aktif": 1
+      },
+      {
+          "id": null,
+          "jenis_referensi_fk": 3,
+          "deskripsi": "Minuman",
+          "status_aktif": 1
+      }
+  ]
+}
+
+settings {
+  encodeUrl: true
+}
