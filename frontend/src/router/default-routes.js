@@ -6,6 +6,12 @@ export const DefaultRoutes = (prefix) => [
     meta: { auth: true, name: "referensi" },
     component: () => import("@/views/pages/master/referensi/index.vue"),
   },
+  {
+    path: "/master/produk",
+    name: prefix + ".produk",
+    meta: { auth: true, name: "produk" },
+    component: () => import("@/views/pages/master/produk/index.vue"),
+  },
 
   {
     path: "/",

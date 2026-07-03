@@ -77,6 +77,8 @@ watch(isOpen, async (val) => {
       await fetchById(props.propsParams.id)
     } else {
       resetForm()
+      // Jika mode create, reset form
+      // formData.value = { deskripsi: '', singkatan: '' }
     }
   }
 })
@@ -92,11 +94,11 @@ watch(isOpen, async (val) => {
   >
     <b-form>
       <b-form-group label="Deskripsi">
-        <b-form-input class="form-control form-control-sm mb-1" v-model="formData.deskripsi" />
+        <b-form-input v-model="formData.deskripsi" />
       </b-form-group>
 
       <b-form-group label="Singkatan">
-        <b-form-input class="form-control form-control-sm mb-1" v-model="formData.singkatan" />
+        <b-form-input v-model="formData.singkatan" />
       </b-form-group>
 
       <b-form-checkbox

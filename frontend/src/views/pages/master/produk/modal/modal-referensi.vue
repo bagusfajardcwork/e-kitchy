@@ -165,8 +165,8 @@ watch(isOpen, async (val) => {
           {{data.index + 1}}
         </template>
         <template #cell(deskripsi)="data">
-          <b-form-input class="form-control form-control-sm" v-model="data.item.deskripsi" @keydown.enter="handlerAddRow" v-if="props.propsParams.flagging === 'create'"/>
-          <b-form-input class="form-control form-control-sm" v-model="data.item.deskripsi" v-else/>
+          <b-form-input v-model="data.item.deskripsi" @keydown.enter="handlerAddRow" v-if="props.propsParams.flagging === 'create'"/>
+          <b-form-input v-model="data.item.deskripsi" v-else/>
         </template>
         <template #cell(aksi)="data">
           <b-button v-if="props.propsParams.flagging === 'create'" variant="outline-danger" class="btn-sm" @click="handlerRemoveRow(data.index)">

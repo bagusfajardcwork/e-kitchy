@@ -8,6 +8,11 @@ export const sidebarMenu = [
           logo: "fa fa-book",
           route: "/master/referensi",
         },
+        {
+          title: "Produk",
+          logo: "fa fa-archive",
+          route: "/master/produk",
+        },
       ],
     },
     {

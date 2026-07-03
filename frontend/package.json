@@ -41,6 +41,7 @@
     "vue": "^3.5.39",
     "vue-echarts": "^6.7.3",
     "vue-flatpickr-component": "^11.0.5",
+    "vue-multiselect": "^3.5.0",
     "vue-router": "^4.6.4",
     "vue3-apexcharts": "^1.11.1"
   },

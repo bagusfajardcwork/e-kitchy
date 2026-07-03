@@ -24,6 +24,9 @@ import './assets/scss/rtl.scss'
 import './assets/scss/customizer.scss'
 import { createPinia } from 'pinia';
 
+// Import custom multiselect CSS override
+import './assets/css/multiselect-custom.css'
+
 const app = createApp(App)
 
 const pinia = createPinia();

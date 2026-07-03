@@ -5,181 +5,7 @@ import {getMeta, getPagination} from "../../../../utils/helperPagination.ts"
 
 export default async function index(server: FastifyInstance) {
 
-  // [CREATE] POST /api/master/referensi
-  server.post('/', async (request: any, reply) => {
-    try {
-      const { jenis_referensi_fk, deskripsi, status_aktif } = request.body
-
-      // ✅ Validasi
-      if (!deskripsi) {
-        return resError(reply, 'Deskripsi wajib diisi!', 400)
-      }
-
-      if (deskripsi.trim().length < 2) {
-        return resError(reply, 'Deskripsi minimal 2 karakter!', 400)
-      }
-
-      if (!jenis_referensi_fk) {
-        return resError(reply, 'ID Jenis Referensi kosong!', 400)
-      }
-
-      // ✅ Validasi 3: Cek Duplikat
-      const [existing]: any = await db.query(
-        `SELECT id FROM m_referensi WHERE LOWER(deskripsi) = LOWER(?)`,
-        [deskripsi]
-      )
-
-      if (existing.length > 0) {
-        return resError(
-          reply,
-          `Referensi dengan deskripsi "${deskripsi}" sudah terdaftar!`,
-          400
-        )
-      }
-
-      // Insert data - ✅ Tambahkan status_aktif
-      const [result]: any = await db.query(
-        `INSERT INTO m_referensi (jenis_referensi_fk, deskripsi, status_aktif) 
-       VALUES (?, ?, ?)`,
-        [jenis_referensi_fk, deskripsi, status_aktif ?? 1]
-      )
-
-      return resSukses(
-        reply,
-        `Referensi "${deskripsi}" berhasil dibuat`,
-        {
-          id: result.insertId,
-          deskripsi,
-          status_aktif: status_aktif ?? 1
-        },
-        { affectedRows: result.affectedRows },
-        201
-      )
-
-    } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        return resError(reply, `Deskripsi sudah ada!`, 400)
-      }
-
-      return resError(reply, 'Gagal membuat referensi', 500)
-    }
-  })
-
-  // [READ BY ID JENIS REFERENSI WITH PAGINATION] GET /api/master/referensi/jenisref/:id?page=1&limit=10
-  server.get('/jenisref/:id', async (request: any, reply) => {
-    try {
-      const { id } = request.params
-
-      // ✅ Ambil parameter pagination
-      const { currentPage, itemsPerPage, offset } = getPagination(
-        request.query.page,
-        request.query.limit
-      )
-
-      // Validasi ID
-      if (!id || isNaN(id)) {
-        return resError(reply, 'ID jenis referensi tidak valid!', 400)
-      }
-
-      // ✅ Cek apakah jenis referensi ada
-      const [jenisRef]: any = await db.query(
-        'SELECT id, deskripsi FROM m_jenis_referensi WHERE id = ?',
-        [id]
-      )
-
-      if (jenisRef.length === 0) {
-        return resError(reply, `Jenis referensi dengan ID ${id} tidak ditemukan`, 404)
-      }
-
-      // ✅ Build WHERE clause
-      let whereClause = 'WHERE jenis_referensi_fk = ?'
-      const params: any[] = [id]
-
-      // ✅ Optional: Tambahkan search jika ada
-      const search = request.query.search?.trim() || ''
-      if (search) {
-        whereClause += ' AND (deskripsi LIKE ? OR singkatan LIKE ?)'
-        params.push(`%${search}%`, `%${search}%`)
-      }
-
-      // ✅ Count total data (dengan filter jenis_referensi_fk)
-      const [countResult]: any = await db.query(
-        `SELECT COUNT(*) as total FROM m_referensi ${whereClause}`,
-        params
-      )
-      const totalData = countResult[0].total
-
-      // ✅ Get data per halaman dengan LIMIT & OFFSET
-      const [rows]: any = await db.query(
-        `SELECT id, jenis_referensi_fk, deskripsi, status_aktif 
-       FROM m_referensi 
-       ${whereClause} 
-       ORDER BY deskripsi ASC 
-       LIMIT ? OFFSET ?`,
-        [...params, itemsPerPage, offset]
-      )
-
-      // ✅ Generate meta pagination
-      const meta = getMeta(totalData, currentPage, itemsPerPage)
-
-      // ✅ Conditional response
-      if (rows.length > 0) {
-        return resSukses(
-          reply,
-          `Ditemukan ${totalData} data referensi untuk "${jenisRef[0].deskripsi}"`,
-          rows,
-          {
-            ...meta,
-            jenis_referensi: {
-              id: jenisRef[0].id,
-              deskripsi: jenisRef[0].deskripsi
-            }
-          }
-        )
-      } else {
-        return resSukses(
-          reply,
-          `Belum ada data referensi untuk "${jenisRef[0].deskripsi}"`,
-          rows,
-          null
-        )
-      }
-
-    } catch (error: any) {
-      return resError(reply, 'Gagal mengambil data', 500)
-    }
-  })
-
-  // [READ BY ID] GET /api/master/referensi/:id
-  server.get('/:id', async (request: any, reply) => {
-    try {
-      const { id } = request.params
-
-      // Validasi ID
-      if (!id || isNaN(id)) {
-        return resError(reply, 'ID tidak valid!', 400)
-      }
-
-      // Query untuk ambil data berdasarkan ID
-      const [rows]: any = await db.query(
-        'SELECT id, deskripsi, jenis_referensi_fk, status_aktif FROM m_referensi WHERE id = ?',
-        [id]
-      )
-
-      // Cek apakah data ditemukan
-      if (rows.length === 0) {
-        return resError(reply, `Data dengan ID ${id} tidak ditemukan`, 404)
-      }
-
-      // Return data (ambil index 0 karena hanya 1 row)
-      return resSukses(reply, 'Data berhasil diambil', rows[0])
-
-    } catch (error: any) {
-      return resError(reply, 'Gagal mengambil data', 500)
-    }
-  })
-
-  // [BATCH CREATE] POST /api/master/referensi/multiple_send -> untuk kirim data array
+  // [CREATE] POST /api/master/referensi/multiple_send -> untuk kirim data array
   server.post('/multiple_send', async (request: any, reply) => {
     const connection = await db.getConnection()
     let transactionStarted = false
@@ -363,6 +189,120 @@ export default async function index(server: FastifyInstance) {
       return resError(reply, 'Gagal membuat referensi: ' + error.message, 500)
     } finally {
       connection.release()
+    }
+  })
+
+  // [READ BY ID JENIS REFERENSI WITH PAGINATION] GET /api/master/referensi/jenisref/:id?page=1&limit=10
+  server.get('/jenisref/:id', async (request: any, reply) => {
+    try {
+      const { id } = request.params
+
+      // ✅ Ambil parameter pagination
+      const { currentPage, itemsPerPage, offset } = getPagination(
+        request.query.page,
+        request.query.limit
+      )
+
+      // Validasi ID
+      if (!id || isNaN(id)) {
+        return resError(reply, 'ID jenis referensi tidak valid!', 400)
+      }
+
+      // ✅ Cek apakah jenis referensi ada
+      const [jenisRef]: any = await db.query(
+        'SELECT id, deskripsi FROM m_jenis_referensi WHERE id = ?',
+        [id]
+      )
+
+      if (jenisRef.length === 0) {
+        return resError(reply, `Jenis referensi dengan ID ${id} tidak ditemukan`, 404)
+      }
+
+      // ✅ Build WHERE clause
+      let whereClause = 'WHERE jenis_referensi_fk = ?'
+      const params: any[] = [id]
+
+      // ✅ Optional: Tambahkan search jika ada
+      const search = request.query.search?.trim() || ''
+      if (search) {
+        whereClause += ' AND (deskripsi LIKE ? OR singkatan LIKE ?)'
+        params.push(`%${search}%`, `%${search}%`)
+      }
+
+      // ✅ Count total data (dengan filter jenis_referensi_fk)
+      const [countResult]: any = await db.query(
+        `SELECT COUNT(*) as total FROM m_referensi ${whereClause}`,
+        params
+      )
+      const totalData = countResult[0].total
+
+      // ✅ Get data per halaman dengan LIMIT & OFFSET
+      const [rows]: any = await db.query(
+        `SELECT id, jenis_referensi_fk, deskripsi, status_aktif 
+       FROM m_referensi 
+       ${whereClause} 
+       ORDER BY deskripsi ASC 
+       LIMIT ? OFFSET ?`,
+        [...params, itemsPerPage, offset]
+      )
+
+      // ✅ Generate meta pagination
+      const meta = getMeta(totalData, currentPage, itemsPerPage)
+
+      // ✅ Conditional response
+      if (rows.length > 0) {
+        return resSukses(
+          reply,
+          `Ditemukan ${totalData} data referensi untuk "${jenisRef[0].deskripsi}"`,
+          rows,
+          {
+            ...meta,
+            jenis_referensi: {
+              id: jenisRef[0].id,
+              deskripsi: jenisRef[0].deskripsi
+            }
+          }
+        )
+      } else {
+        return resSukses(
+          reply,
+          `Belum ada data referensi untuk "${jenisRef[0].deskripsi}"`,
+          rows,
+          null
+        )
+      }
+
+    } catch (error: any) {
+      return resError(reply, 'Gagal mengambil data', 500)
+    }
+  })
+
+  // [READ BY ID] GET /api/master/referensi/:id
+  server.get('/:id', async (request: any, reply) => {
+    try {
+      const { id } = request.params
+
+      // Validasi ID
+      if (!id || isNaN(id)) {
+        return resError(reply, 'ID tidak valid!', 400)
+      }
+
+      // Query untuk ambil data berdasarkan ID
+      const [rows]: any = await db.query(
+        'SELECT id, deskripsi, jenis_referensi_fk, status_aktif FROM m_referensi WHERE id = ?',
+        [id]
+      )
+
+      // Cek apakah data ditemukan
+      if (rows.length === 0) {
+        return resError(reply, `Data dengan ID ${id} tidak ditemukan`, 404)
+      }
+
+      // Return data (ambil index 0 karena hanya 1 row)
+      return resSukses(reply, 'Data berhasil diambil', rows[0])
+
+    } catch (error: any) {
+      return resError(reply, 'Gagal mengambil data', 500)
     }
   })
 
