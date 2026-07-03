@@ -53,10 +53,9 @@ const handleSave = async () => {
     // jika null maka create, jika ada idnya maka update
     if (!formData.id) {
       response = await Api.post('master/produk',  formData)
+    } else {
+      response = await Api.put('master/produk', formData.id,  formData)
     }
-    // else {
-    //   response = await Api.put('master/jenis_referensi', formData.value.id,  formData.value)
-    // }
     await swalSuccess(response.message)
     emit('simpan', 'tableProduk', formData) // emit untuk kirim ke parent
     modalClose()
@@ -99,14 +98,12 @@ const fetchById = async (param1) => {
       status_aktif: res.status_aktif
     })
 
-    if (res.jenisbarang_fk) {
-      const jenisOption = options.jenisbarang_fk.find(opt => opt.value === res.jenisbarang_fk)
-      if (jenisOption) selected.jenisbarang_fk = jenisOption
+    if (res.jenisbarang_fk && res.jenisbarang_label) {
+      selected.jenisbarang_fk = [{ value: res.jenisbarang_fk, label: res.jenisbarang_label }]
     }
 
-    if (res.distributor_fk) {
-      const distOption = options.distributor_fk.find(opt => opt.value === res.distributor_fk)
-      if (distOption) selected.distributor_fk = distOption
+    if (res.distributor_fk && res.distributor_label) {
+      selected.distributor_fk = [{ value: res.distributor_fk, label: res.distributor_label }]
     }
 
   } catch (error) {
@@ -155,13 +152,10 @@ watch(isOpen, async (val) => {
       await fetchById(props.propsParams.id)
     } else {
       resetForm()
-      // Jika mode create, reset form
-      // formData.value = { deskripsi: '', singkatan: '' }
     }
   }
 })
 </script>
-
 
 <template>
   <b-modal
@@ -194,7 +188,7 @@ watch(isOpen, async (val) => {
                          :loading="loading.distributor_fk"
                          @open="fetchSelectize($event, 'distributor_fk')"
                          @update:model-value="(item) => formData.distributor_fk = item?.value || null"
-                         trackBy="value" label="label" :allowEmpty="false" openDirection="top" :showLabels="false"
+                         trackBy="value" label="label" :allowEmpty="true" openDirection="top" :showLabels="false"
             />
           </b-form-group>
         </b-col>
@@ -217,18 +211,19 @@ watch(isOpen, async (val) => {
             />
           </div>
         </b-col>
+        <b-col sm="12" md="12" lg="12">
+          <b-form-checkbox
+              v-if="props.propsParams.flagging === 'update'"
+              id="status_aktif"
+              v-model="formData.status_aktif"
+              name="status_aktif"
+              :value="1"
+              :unchecked-value="0"
+          >
+            {{ formData.status_aktif === 1 ? 'Aktif' : 'Nonaktif' }}
+          </b-form-checkbox>
+        </b-col>
       </b-row>
-
-<!--      <b-form-checkbox-->
-<!--          v-if="props.propsParams.flagging === 'update'"-->
-<!--          id="status_aktif"-->
-<!--          v-model="formData.status_aktif"-->
-<!--          name="status_aktif"-->
-<!--          :value="1"-->
-<!--          :unchecked-value="0"-->
-<!--      >-->
-<!--        {{ formData.status_aktif === 1 ? 'Aktif' : 'Nonaktif' }}-->
-<!--      </b-form-checkbox>-->
 
     </b-form>
 

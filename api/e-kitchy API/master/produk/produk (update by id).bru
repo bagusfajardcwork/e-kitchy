@@ -1,0 +1,29 @@
+meta {
+  name: produk (update by id)
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{base_url}}/master/produk/2
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "id": 2,
+      "jenisbarang_fk": 12,
+      "deskripsi": "Paha Ayam",
+      "keterangan": "Paha ayam atas atau bawah",
+      "distributor_fk": null,
+      "gambar": null,
+      "harga": 16000,
+      "status_aktif": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

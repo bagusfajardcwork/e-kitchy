@@ -91,9 +91,9 @@ const deleteData = async (item) => {
     let response
     try {
 
-      response = await Api.delete('master/referensi', item.id)
+      response = await Api.delete('master/produk', item.id)
       await swalSuccess(response.message || 'Data berhasil dihapus')
-      await fetchProduk(tableProduk.selectedDataJenRef.id)
+      await fetchProduk()
     } catch (error) {
       await swalError(getErrorMessage(error))
     }
@@ -142,36 +142,51 @@ watch(
       <!-- Table Produk-->
       <b-col sm="12" md="12" lg="12">
         <b-card no-body>
-          <b-card-header class="p-3 d-flex justify-content-between">
-            <div class="header-title align-content-center">
-              <b-card-title>Produk</b-card-title>
-            </div>
-            <div class="d-flex flex-row align-items-center">
-              <b-input-group class="mx-2" size="sm">
-                <b-form-input
-                    v-model="tableProduk.searchQuery"
-                    type="text"
-                    placeholder="Cari deskripsi..."
-                    :disabled="tableProduk.loading"
-                >
-                </b-form-input>
+          <b-card-header class="p-3">
+            <div class="row align-items-center">
+              <div class="col-sm-12 col-lg-1">
+                <div class="header-title align-content-center">
+                  <b-card-title>Produk</b-card-title>
+                </div>
+              </div>
+              <div class="col-sm-12 col-lg-11">
+                <div class="d-flex flex-row justify-content-end text-end gap-2">
+                  <div class="w-50">
+                    <b-input-group size="sm">
+                      <b-form-input
+                          v-model="tableProduk.searchQuery"
+                          type="text"
+                          placeholder="Cari deskripsi..."
+                          :disabled="tableProduk.loading"
+                      >
+                      </b-form-input>
 
-                <b-input-group-text>
-                  <i class="ri-search-line text-primary"></i>
-                </b-input-group-text>
+                      <b-input-group-text>
+                        <i class="ri-search-line text-primary"></i>
+                      </b-input-group-text>
 
-                <!-- Tombol Clear (muncul saat ada text) -->
-                <b-input-group-text v-if="tableProduk.searchQuery">
-                  <i
-                      class="ri-close-line text-danger"
-                      style="cursor: pointer;"
-                      @click="clearSearch('tableProduk')"
-                  ></i>
-                </b-input-group-text>
-              </b-input-group>
-              <b-button variant="primary" @click="openModal('componentModalProduk','create')" class="btn-sm">
-                <i class="ri-add-large-fill pe-0 me-2"></i>Tambah
-              </b-button>
+                      <!-- Tombol Clear (muncul saat ada text) -->
+                      <b-input-group-text v-if="tableProduk.searchQuery">
+                        <i
+                            class="ri-close-line text-danger"
+                            style="cursor: pointer;"
+                            @click="clearSearch('tableProduk')"
+                        ></i>
+                      </b-input-group-text>
+                    </b-input-group>
+                  </div>
+                  <div>
+                    <b-button variant="primary" @click="openModal('componentModalProduk','create')" class="btn-sm">
+                      <i class="ri-add-large-fill pe-0 me-2"></i>Tambah Satuan (Detail)
+                    </b-button>
+                  </div>
+                  <div>
+                    <b-button variant="primary" @click="openModal('componentModalProdukMultiple','create')" class="btn-sm">
+                      <i class="ri-add-large-fill pe-0 me-2"></i>Tambah Sekaligus
+                    </b-button>
+                  </div>
+                </div>
+              </div>
             </div>
           </b-card-header>
 
@@ -196,6 +211,9 @@ watch(
               <template #cell(aksi)="data">
                 <b-button variant="outline-primary" class="btn-sm mx-1" @click.stop="openModal('componentModalProduk','update', data.item)">
                   <i class="ri-edit-line"></i>
+                </b-button>
+                <b-button variant="outline-danger" class="btn-sm" @click.stop="deleteData(data.item)">
+                  <i class="ri-delete-bin-line"></i>
                 </b-button>
               </template>
               <template #empty>
