@@ -4,6 +4,7 @@ import { Api } from '@/composable/useApi.ts'
 
 // import component
 import componentModalProduk from './modal/modal-produk.vue'
+import componentModalProdukMultiple from './modal/modal-produk-multiple.vue'
 import {swalConfirm, getErrorMessage, swalSuccess, swalError} from '@/utilities/helperSwal'
 
 // state
@@ -35,6 +36,12 @@ const tableProduk = reactive({
 const modalProduk = reactive({
   id: null,
   jenis_referensi_fk: null,
+  modalTitle: '',
+  isOpen: false,
+  flagging: '',
+})
+const modalProdukMultiple = reactive({
+  id: null,
   modalTitle: '',
   isOpen: false,
   flagging: '',
@@ -72,6 +79,10 @@ const openModal = (param1, param2, param3) => {
     }
     modalProduk.flagging = param2
     modalProduk.isOpen = true
+  } else if (param1 === 'componentModalProdukMultiple') {
+    modalProdukMultiple.modalTitle = 'Tambah Produk Sekaligus'
+    modalProdukMultiple.flagging = param2
+    modalProdukMultiple.isOpen = true
   }
 }
 const refreshTable = (param1) => {
@@ -289,6 +300,12 @@ watch(
         :propsParams="modalProduk"
         @simpan="refreshTable('tableProduk')"
     />
+    <componentModalProdukMultiple
+        v-model="modalProdukMultiple.isOpen"
+        :propsParams="modalProdukMultiple"
+        @simpan="refreshTable('tableProduk')"
+    />
+
   </div>
 </template>
 

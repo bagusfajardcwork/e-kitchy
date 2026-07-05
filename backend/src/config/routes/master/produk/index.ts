@@ -110,6 +110,241 @@ export default async function index(server: FastifyInstance) {
     }
   })
 
+  // [BATCH CREATE] POST /api/master/produk/multiple_send
+  server.post('/multiple_send', async (request: any, reply) => {
+    const connection = await db.getConnection()
+    let transactionStarted = false
+
+    try {
+      const { items } = request.body
+
+      // ✅ Definisikan tipe results
+      interface BatchResult {
+        success: Array<{
+          index: number
+          id: number
+          deskripsi: string
+          jenisbarang_fk: number
+          distributor_fk: number | null
+          harga: number | null
+          status_aktif: number
+        }>
+        failed: Array<{
+          index: number
+          deskripsi: string
+          error: string
+        }>
+      }
+
+      // ✅ Validasi input
+      if (!Array.isArray(items)) {
+        return resError(reply, 'Data harus berupa array!', 400)
+      }
+
+      if (items.length === 0) {
+        return resError(reply, 'Array tidak boleh kosong!', 400)
+      }
+
+      if (items.length > 100) {
+        return resError(reply, 'Maksimal 100 data per batch!', 400)
+      }
+
+      await connection.beginTransaction()
+      transactionStarted = true
+
+      const results: BatchResult = {
+        success: [],
+        failed: []
+      }
+
+      // ✅ Track duplikat dalam batch (deskripsi + jenisbarang_fk)
+      const produkInBatch = new Set<string>()
+
+      // Proses setiap item
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        const { deskripsi, jenisbarang_fk, distributor_fk, harga, status_aktif } = item
+
+        try {
+          // ✅ Validasi 1: Deskripsi wajib
+          if (!deskripsi || deskripsi.trim().length < 2) {
+            results.failed.push({
+              index: i,
+              deskripsi: deskripsi || '(kosong)',
+              error: 'Deskripsi wajib diisi dan minimal 2 karakter!'
+            })
+            continue
+          }
+
+          // ✅ Validasi 2: Jenis barang wajib
+          if (!jenisbarang_fk) {
+            results.failed.push({
+              index: i,
+              deskripsi,
+              error: 'Jenis barang wajib dipilih!'
+            })
+            continue
+          }
+
+          // ✅ Validasi 3: Harga (jika ada)
+          let hargaRounded: number | null = null
+          if (harga !== null && harga !== undefined && harga !== '') {
+            const hargaNumber = parseFloat(harga)
+
+            if (isNaN(hargaNumber)) {
+              results.failed.push({
+                index: i,
+                deskripsi,
+                error: 'Harga harus berupa angka!'
+              })
+              continue
+            }
+
+            if (hargaNumber < 0) {
+              results.failed.push({
+                index: i,
+                deskripsi,
+                error: 'Harga tidak boleh negatif!'
+              })
+              continue
+            }
+
+            hargaRounded = Math.round(hargaNumber * 100) / 100
+          }
+
+          // ✅ Validasi 4: Cek duplikat IN BATCH
+          const key = `${deskripsi.trim().toLowerCase()}_${jenisbarang_fk}`
+          if (produkInBatch.has(key)) {
+            results.failed.push({
+              index: i,
+              deskripsi,
+              error: `Produk "${deskripsi}" duplikat dalam batch (jenis barang sama)!`
+            })
+            continue
+          }
+
+          // ✅ Validasi 5: Cek duplikat di DATABASE
+          const [existing]: any = await connection.query(
+            `SELECT id FROM m_produk 
+           WHERE LOWER(deskripsi) = LOWER(?) 
+             AND jenisbarang_fk = ? 
+             AND status_aktif = 1`,
+            [deskripsi.trim(), jenisbarang_fk]
+          )
+
+          if (existing.length > 0) {
+            results.failed.push({
+              index: i,
+              deskripsi,
+              error: `Produk "${deskripsi}" sudah ada di kategori ini!`
+            })
+            continue
+          }
+
+          // ✅ Insert ke m_produk
+          const [produkResult]: any = await connection.query(
+            `INSERT INTO m_produk (deskripsi, jenisbarang_fk, distributor_fk, status_aktif) 
+           VALUES (?, ?, ?, ?)`,
+            [
+              deskripsi.trim(),
+              jenisbarang_fk,
+              distributor_fk || null,
+              status_aktif ?? 1
+            ]
+          )
+
+          const produkId = produkResult.insertId
+
+          // ✅ Insert ke m_harga (jika ada)
+          if (hargaRounded !== null) {
+            await connection.query(
+              `INSERT INTO m_harga (produk_fk, harga, status_aktif) 
+             VALUES (?, ?, ?)`,
+              [produkId, hargaRounded, status_aktif ?? 1]
+            )
+          }
+
+          // ✅ Tambahkan ke set untuk cek duplikat
+          produkInBatch.add(key)
+
+          // ✅ Push ke success
+          results.success.push({
+            index: i,
+            id: produkId,
+            deskripsi: deskripsi.trim(),
+            jenisbarang_fk,
+            distributor_fk: distributor_fk || null,
+            harga: hargaRounded,
+            status_aktif: status_aktif ?? 1
+          })
+
+        } catch (error: any) {
+          console.error(`Error pada item index ${i}:`, error)
+          results.failed.push({
+            index: i,
+            deskripsi: deskripsi || '(error)',
+            error: error.message || 'Gagal insert data'
+          })
+        }
+      }
+
+      // ✅ Commit atau rollback
+      if (results.success.length > 0) {
+        await connection.commit()
+      } else {
+        await connection.rollback()
+      }
+
+      // ✅ Response berdasarkan skenario
+      const totalSuccess = results.success.length
+      const totalFailed = results.failed.length
+
+      if (totalSuccess > 0 && totalFailed === 0) {
+        // Semua sukses
+        return resSukses(
+          reply,
+          `${totalSuccess} data produk berhasil dibuat`,
+          results.success,
+          { totalSuccess, totalFailed, totalProcessed: items.length },
+          201
+        )
+      } else if (totalSuccess > 0 && totalFailed > 0) {
+        // Sebagian sukses
+        return resSukses(
+          reply,
+          `${totalSuccess} data berhasil, ${totalFailed} data gagal`,
+          results,
+          { totalSuccess, totalFailed, totalProcessed: items.length },
+          200
+        )
+      } else {
+        // Semua gagal
+        const failedMessages = results.failed
+          .map(f => `Index ${f.index}: ${f.error}`)
+          .join('; ')
+
+        return resError(
+          reply,
+          `Semua ${totalFailed} data gagal dibuat. Detail: ${failedMessages}`,
+          400
+        )
+      }
+
+    } catch (error: any) {
+      if (transactionStarted) {
+        try {
+          await connection.rollback()
+        } catch (rollbackError) {
+          console.error('Error saat rollback:', rollbackError)
+        }
+      }
+      console.error('Error batch insert produk:', error)
+      return resError(reply, 'Gagal membuat produk: ' + error.message, 500)
+    } finally {
+      connection.release()
+    }
+  })
+
   // [READ ALL] GET /api/master/produk?page=1&limit=10&search=
   server.get('/', async (request: any, reply) => {
     try {

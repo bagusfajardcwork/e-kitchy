@@ -4,6 +4,8 @@ import {Api} from "@/composable/useApi.ts"
 import {BButton, BForm, BFormCheckbox, BFormGroup, BFormInput, BModal} from "bootstrap-vue-next";
 import { swalSuccess, swalError, swalConfirm, getErrorMessage } from '@/utilities/helperSwal'
 import multiselect from 'vue-multiselect'
+import {useNumericInput} from "@/composable/custom/useNumericInput.js";
+const { allowOnlyNumbers, handlePaste, formatHarga } = useNumericInput()
 
 // initilize
 const isOpen = defineModel({ type: Boolean, default: false })
@@ -127,22 +129,18 @@ const fetchSelectize = async (param1, param2) => {
   }
 }
 const displayHarga = computed({
-  // GET: Mengubah angka murni menjadi format 150.000 untuk ditampilkan
   get() {
-    if (!formData.harga) return ''
-    // Regex untuk menambahkan titik setiap 3 digit
-    return formData.harga.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    return formatHarga(formData.harga)
   },
-
-  // SET: Mengubah input user (150.000) kembali menjadi angka murni (150000)
   set(value) {
-    // Hapus semua karakter kecuali angka (0-9)
-    const rawValue = value.replace(/[^0-9]/g, '')
-
-    // Simpan ke formData.harga sebagai Number
+    const rawValue = String(value || '').replace(/[^0-9]/g, '')
     formData.harga = rawValue ? Number(rawValue) : null
   }
 })
+const updateHarga = (val) => {
+  const rawValue = String(val || '').replace(/[^0-9]/g, '')
+  formData.harga = rawValue ? Number(rawValue) : null
+}
 
 // load awal/ watch
 watch(isOpen, async (val) => {
@@ -195,11 +193,14 @@ watch(isOpen, async (val) => {
         <b-col sm="12" md="12" lg="4">
           <b-form-group label="Harga">
             <b-form-input
-                v-model="displayHarga"
+                :model-value="displayHarga"
+                @update:model-value="updateHarga"
+                @keypress="allowOnlyNumbers"
+                @paste="handlePaste"
                 type="text"
                 inputmode="numeric"
                 placeholder="0"
-                class="form-control form-control-sm"
+                size="sm"
             />
           </b-form-group>
         </b-col>
