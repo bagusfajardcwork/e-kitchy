@@ -1,0 +1,10 @@
+INSERT INTO `m_referensi` VALUES (2, 5, 'Staff', 1);
+INSERT INTO `m_referensi` VALUES (2, 6, 'Administrator', 1);
+INSERT INTO `m_referensi` VALUES (2, 7, 'Supervisor', 1);
+INSERT INTO `m_referensi` VALUES (2, 8, 'Owner', 1);
+INSERT INTO `m_referensi` VALUES (3, 12, 'Makanan', 1);
+INSERT INTO `m_referensi` VALUES (3, 13, 'Minuman', 1);
+INSERT INTO `m_referensi` VALUES (4, 14, 'PT. A', 1);
+INSERT INTO `m_referensi` VALUES (4, 15, 'PT. B', 1);
+INSERT INTO `m_referensi` VALUES (1, 16, 'Promo A', 1);
+INSERT INTO `m_referensi` VALUES (1, 17, 'Promo B', 1);
