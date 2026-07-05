@@ -1,0 +1,37 @@
+meta {
+  name: multiple_send
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{base_url}}/master/produk/multiple_send
+  body: json
+  auth: inherit
+}
+
+body:json {
+  [
+      {
+          "id": null,
+          "deskripsi": "Ayam Penyet Dada",
+          "jenisbarang_fk": 12,
+          "distributor_fk": null,
+          "harga": 25000,
+          "status_aktif": 1
+      },
+      {
+          "id": null,
+          "deskripsi": "Es Teh Manis",
+          "jenisbarang_fk": 13,
+          "distributor_fk": null,
+          "harga": 7000,
+          "status_aktif": 1
+      }
+  ]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
