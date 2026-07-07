@@ -5,6 +5,7 @@ import cors from '@fastify/cors'
 import produk from './config/routes/master/produk'
 import referensi from './config/routes/master/referensi'
 import jenis_referensi from './config/routes/master/jenis_referensi'
+import pegawai from './config/routes/master/pegawai'
 import selectize from './config/routes/selectize'
 
 const server = fastify({ logger: true })
@@ -35,6 +36,8 @@ server.register(produk, { prefix: '/api/master/produk' })
 server.register(jenis_referensi, { prefix: '/api/master/jenis_referensi' })
 // referensi
 server.register(referensi, { prefix: '/api/master/referensi' })
+// pegawai
+server.register(pegawai, { prefix: '/api/master/pegawai' })
 
 // SELECTIZE
 server.register(selectize, { prefix: '/api/selectize' })

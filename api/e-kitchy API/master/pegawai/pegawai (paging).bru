@@ -1,0 +1,22 @@
+meta {
+  name: pegawai (paging)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/master/pegawai/?page=1&limit=10&search=
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+  limit: 10
+  search: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,25 @@
+meta {
+  name: pegawai (create)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/master/pegawai
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nama": "Super Admin",
+    "username": "superadmin",
+    "password": "superadmin123",
+    "grup_akses": [1] 
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
