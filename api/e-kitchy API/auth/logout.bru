@@ -1,0 +1,32 @@
+meta {
+  name: logout
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/auth/logout
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+}
+
+script:post-response {
+  // Cek apakah response berhasil (status 200)
+  if (res.status === 200) {
+    // Kosongkan variable auth_token di environment
+    bru.setEnvVar('auth_token', '')
+    
+    console.log('✅ Token berhasil dihapus dari environment!')
+  } else {
+    console.log('❌ Logout gagal, token tetap ada.')
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

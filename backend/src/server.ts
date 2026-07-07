@@ -1,5 +1,6 @@
 import fastify from 'fastify'
 import cors from '@fastify/cors'
+import authRoutes from './config/routes/auth'
 
 // 1. Import rute / routes
 import produk from './config/routes/master/produk'
@@ -28,6 +29,9 @@ server.get('/api', async (request, reply) => {
     status: 'online'
   }
 })
+
+// AUTH
+server.register(authRoutes, { prefix: '/api/auth' })
 
 // MASTER
 // produk

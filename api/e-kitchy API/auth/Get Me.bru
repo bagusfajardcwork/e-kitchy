@@ -1,0 +1,27 @@
+meta {
+  name: Get Me
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/auth/me
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{auth_token}}
+}
+
+body:json {
+  {
+    "username": "superadmin",
+    "password": "superadmin123"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
